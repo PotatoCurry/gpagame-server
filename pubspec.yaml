@@ -1,0 +1,13 @@
+name: gpagame
+
+environment:
+  sdk: ">=2.0.0 <3.0.0"
+
+dependencies:
+  aqueduct: ^4.0.0-b1
+  skyscrapeapi: ^4.1.0+1
+  logging: ^0.11.4
+
+dev_dependencies:
+  test: ^1.6.3
+  aqueduct_test: ^2.0.0-b1
