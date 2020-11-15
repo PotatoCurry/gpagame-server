@@ -77,6 +77,8 @@ class TradeController extends ResourceController {
         if (shareCount > totalShares)
           return Response(422, null, {"error": "not enough shares."});
         investor.availableFunds += liquidFunds;
+        // ignore: parameter_assignments
+        shareCount = -shareCount;
       }
       break;
 

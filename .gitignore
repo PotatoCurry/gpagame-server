@@ -1,2 +1,4 @@
-
+.dart_tool/
+.idea/
+.packages
 config.yaml
