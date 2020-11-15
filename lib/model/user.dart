@@ -3,6 +3,7 @@ import 'package:gpagame/model/investment.dart';
 import 'package:skyscrapeapi/sky_core.dart';
 
 import '../gpagame.dart';
+import 'historical_net_worth.dart';
 
 class User extends ManagedObject<_User>
     implements _User, ManagedAuthResourceOwner<_User> {
@@ -68,5 +69,5 @@ class _User extends ResourceOwnerTableDefinition {
 
   ManagedSet<HistoricalStockPrice> historicalStockPrices;
 
-  ManagedSet<HistoricalStockPrice> historicalNetWorths;
+  ManagedSet<HistoricalNetWorth> historicalNetWorths;
 }
