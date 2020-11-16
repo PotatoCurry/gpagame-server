@@ -1,11 +1,10 @@
 import '../model/user.dart';
 import '../gpagame.dart';
 
-class UserController extends ResourceController {
-  UserController(this.context, this.authServer);
+class WorthController extends ResourceController {
+  WorthController(this.context);
 
   final ManagedContext context;
-  final AuthServer authServer;
 
   @Operation.get()
   Future<Response> getAll() async {

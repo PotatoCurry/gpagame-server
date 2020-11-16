@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:gpagame/controller/historical_price_controller.dart';
 import 'package:gpagame/controller/trade_controller.dart';
+import 'package:gpagame/controller/worth_controller.dart';
 import 'package:skyscrapeapi/sky_core.dart';
 
 import 'controller/identity_controller.dart';
@@ -191,6 +192,12 @@ class GpagameChannel extends ApplicationChannel
         .route("/history/[:username]")
         .link(() => Authorizer.bearer(authServer))
         .link(() => HistoricalPriceController(context));
+
+    /* Gets historical stock prices for a user */
+    router
+        .route("/worth/[:username]")
+        .link(() => Authorizer.bearer(authServer))
+        .link(() => WorthController(context));
 
     return router;
   }
