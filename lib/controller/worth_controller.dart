@@ -11,7 +11,9 @@ class WorthController extends ResourceController {
     final query = Query<User>(context)
       ..join(set: (u) => u.investments);
     final users = await query.fetch();
-    final worths = users.map((u) => u.netWorth(context));
+    final worths = {};
+    for (final user in users)
+      worths[user.id] = await user.netWorth(context);
     return Response.ok(worths);
   }
 
@@ -24,7 +26,7 @@ class WorthController extends ResourceController {
     if (user == null) {
       return Response.notFound();
     }
-    final netWorth = user.netWorth(context);
+    final netWorth = await user.netWorth(context);
 
     if (request.authorization.ownerID != user.id) {
       // Filter out stuff for non-owner of user

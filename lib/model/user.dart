@@ -19,7 +19,7 @@ class User extends ManagedObject<_User>
     for (final investment in investments) {
       sum += investment.shareCount * investment.targetUser.stockPrice;
     }
-    return sum;
+    return sum + availableFunds;
   }
 
   int totalShares(ManagedContext context, User user) {
