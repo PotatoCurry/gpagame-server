@@ -1,6 +1,5 @@
 import 'package:gpagame/model/historical_stock_price.dart';
 import 'package:gpagame/model/investment.dart';
-import 'package:skyscrapeapi/sky_core.dart';
 
 import '../gpagame.dart';
 import 'historical_net_worth.dart';
@@ -11,11 +10,15 @@ class User extends ManagedObject<_User>
   String password;
 
   Future<double> netWorth(ManagedContext context) async {
-    final query = Query<Investment>(context)
+    final investmentQuery = Query<Investment>(context)
       ..where((i) => i.investor.id).equalTo(id)
       ..join(object: (i) => i.targetUser);
-    final sum = await query.reduce.sum((i) => i.shareCount * i.targetUser.stockPrice);
-    print(sum);
+    final investments = await investmentQuery.fetch();
+
+    var sum = 0.0;
+    for (final investment in investments) {
+      sum += investment.shareCount * investment.targetUser.stockPrice;
+    }
     return sum;
   }
 

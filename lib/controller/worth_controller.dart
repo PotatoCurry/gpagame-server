@@ -11,8 +11,8 @@ class WorthController extends ResourceController {
     final query = Query<User>(context)
       ..join(set: (u) => u.investments);
     final users = await query.fetch();
-    final netWorths = users.map((u) => u.netWorth(context));
-    return Response.ok(netWorths);
+    final worths = users.map((u) => u.netWorth(context));
+    return Response.ok(worths);
   }
 
   @Operation.get("username")
