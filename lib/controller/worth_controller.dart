@@ -13,7 +13,7 @@ class WorthController extends ResourceController {
     final users = await query.fetch();
     final worths = {};
     for (final user in users)
-      worths[user.id] = await user.netWorth(context);
+      worths[user.username] = await user.netWorth(context);
     return Response.ok(worths);
   }
 
