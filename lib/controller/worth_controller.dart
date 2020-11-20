@@ -28,10 +28,6 @@ class WorthController extends ResourceController {
     }
     final netWorth = await user.netWorth(context);
 
-    if (request.authorization.ownerID != user.id) {
-      // Filter out stuff for non-owner of user
-    }
-
     return Response.ok(netWorth);
   }
 }

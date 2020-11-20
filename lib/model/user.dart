@@ -54,6 +54,9 @@ class _User extends ResourceOwnerTableDefinition {
   int grade;
 
   @Column(nullable: true)
+  String schedule;
+
+  @Column(nullable: true)
   String imageURL;
 
   // Game mechanics

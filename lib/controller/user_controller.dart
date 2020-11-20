@@ -25,10 +25,6 @@ class UserController extends ResourceController {
       return Response.notFound();
     }
 
-    if (request.authorization.ownerID != user.id) {
-      // Filter out stuff for non-owner of user
-    }
-
     return Response.ok(user);
   }
 

@@ -84,6 +84,8 @@ class GpagameChannel extends ApplicationChannel
     router
         .route("/register/status")
         .linkFunction((request) async {
+          // Prematurely closes websocket
+          // ignore: close_sinks
           final socket = await WebSocketTransformer.upgrade(request.raw);
           final payload = await socket.first;
           final incoming = json.decode(payload as String);
@@ -92,79 +94,16 @@ class GpagameChannel extends ApplicationChannel
             ..where((u) => u.username).equalTo(username)
             ..returningProperties((user) => [user.skywardUsername, user.skywardPassword, user.badCredentials]);
           final user = await query.fetchOne();
-          connections[user.id] = socket;
 
-          try {
-            final query = Query<site_model.User>(context)
-              ..where((u) => u.username).equalTo(username)
-              ..returningProperties((user) => [user.skywardUsername, user.skywardPassword, user.initialized, user.badCredentials]);
-            var user = await query.fetchOne();
+          initializeAccount(username, context).listen((status) async {
             connections[user.id] = socket;
-            if (user.initialized) {
-              final outgoing = json.encode({
-                "status": "user_already_initialized"
-              });
-              socket.add(outgoing);
-              print(outgoing);
-              await socket.close();
-              return null;
-            }
-
-            var outgoing = json.encode({
-              "status": "creating_account"
-            });
+            String outgoing;
+            if (status == null)
+              outgoing = json.encode({"status": "error"});
+            else
+              outgoing = json.encode({"status": status});
             socket.add(outgoing);
-            print(outgoing);
-            final skywardUser = await SkyCore.login(user.skywardUsername, user.skywardPassword, "https://skyward-fbprod.iscorp.com/scripts/wsisa.dll/WService%3Dwsedufortbendtx/fwemnu01.w");
-            outgoing = json.encode({
-              "status": "logging_into_skyward"
-            });
-            socket.add(outgoing);
-            print(outgoing);
-
-            final studentProfile = await skywardUser.getStudentProfile();
-            final studentInfoQuery = Query<site_model.User>(context)
-              ..values.initialized = true
-              ..values.name = studentProfile.name
-              ..values.schoolName = studentProfile.currentSchool.schoolName
-              ..values.grade = int.parse(studentProfile.currentSchool.attributes["Grade:"])
-              ..values.imageURL = studentProfile.studentAttributes["Student Image Href Link"]
-              ..where((u) => u.id).equalTo(user.id);
-            user = await studentInfoQuery.updateOne();
-            outgoing = json.encode({
-              "status": "downloading_student_info"
-            });
-            socket.add(outgoing);
-            print(outgoing);
-            log.fine("Got student info for user ${user.id}");
-
-            await skywardUser.getGradebook();
-            outgoing = json.encode({
-              "status": "accessing_gradebook"
-            });
-            socket.add(outgoing);
-            print(outgoing);
-
-            final average = await calculateRoughAverage(skywardUser);
-            await updateStockPrice(context, user, average);
-            outgoing = json.encode({
-              "status": "calculating_stock_value"
-            });
-            socket.add(outgoing);
-            print(outgoing);
-
-          } on SkywardError {
-            log.warning("Could not get student info for user ${user.id}");
-            final outgoing = json.encode({
-              "status": "error_logging_in"
-            });
-            socket.add(outgoing);
-            final badCredentialQuery = Query<site_model.User>(context)
-              ..values.badCredentials = true
-              ..where((u) => u.id).equalTo(user.id);
-            await badCredentialQuery.updateOne();
-          }
-          await socket.close();
+          });
           return null;
         });
 
