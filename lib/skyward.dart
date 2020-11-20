@@ -18,33 +18,35 @@ Stream<String> initializeAccount(String username, ManagedContext context) async*
 
     final skywardUser = await SkyCore.login(user.skywardUsername, user.skywardPassword, "https://skyward-fbprod.iscorp.com/scripts/wsisa.dll/WService%3Dwsedufortbendtx/fwemnu01.w");
     yield "logging_into_skyward";
+    log.fine("Logged into Skyward for user ${user.username}");
 
     final studentProfile = await skywardUser.getStudentProfile();
-    final studentInfoQuery = Query<site_model.User>(context)
+    yield "downloading_student_info";
+    log.fine("Downloaded student info for user ${user.username}");
+
+    final gradebook = await skywardUser.getGradebook();
+    yield "accessing_gradebook";
+    log.fine("Accessed gradebook for user ${user.username}");
+
+    // TODO: Hold uninitialized profiles in a temporary table to avoid having nullable properties in the user table
+    final studentQuery = Query<site_model.User>(context)
+      ..values.initialized = true
       ..values.name = studentProfile.name
       ..values.schoolName = studentProfile.currentSchool.schoolName
       ..values.grade = int.parse(studentProfile.currentSchool.attributes["Grade:"])
       ..values.imageURL = studentProfile.studentAttributes["Student Image Href Link"]
-      ..where((u) => u.id).equalTo(user.id);
-    user = await studentInfoQuery.updateOne();
-    yield "downloading_student_info";
-    log.fine("Got student info for user ${user.id}");
-
-    final gradebook = await skywardUser.getGradebook();
-    final studentScheduleQuery = Query<site_model.User>(context)
-      ..values.initialized = true
       ..values.schedule = gradebook.getAllClasses()
           .map((course) => course.courseName).join(':::')
       ..where((u) => u.id).equalTo(user.id);
-    user = await studentScheduleQuery.updateOne();
-    yield "accessing_gradebook";
+    user = await studentQuery.updateOne();
 
     final average = await calculateRoughAverage(skywardUser);
     await updateStockPrice(context, user, average);
     yield "calculating_stock_value";
+    log.fine("Calculated stock value for user ${user.username}");
   } on SkywardError {
-    log.warning("Could not get student info for user ${user.id}");
     yield "error_logging_in";
+    log.warning("Error logging into Skyward for user ${user.username}");
     final badCredentialQuery = Query<site_model.User>(context)
       ..values.badCredentials = true
       ..where((u) => u.id).equalTo(user.id);
